@@ -7,6 +7,13 @@ This repo contains the Frontend - UI for the PetInsurance
 git clone this repo and cd to move into the repo
 
 ```
+ssh : git clone git@github.com:nivena/EtherInsure.git
+https:git clone https://github.com/nivena/EtherInsure.git
+
+$ cd code/UI
+```
+
+```
 yarn install  # installs all the packages
 ```
 
