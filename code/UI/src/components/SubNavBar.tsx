@@ -28,6 +28,7 @@ const NavLink = (props: Props) => {
             as="a"
             px={2}
             py={1}
+            fontWeight='semibold'
             rounded={'md'}
             _hover={{
                 textDecoration: 'none',
