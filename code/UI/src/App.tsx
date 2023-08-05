@@ -2,6 +2,7 @@ import { Grid, GridItem, SimpleGrid } from "@chakra-ui/react";
 import NavBar from "./components/NavBar";
 import PetCard from "./components/PetCard";
 import BlockchainCard from "./components/BlockchainCard";
+import "./custom.css";
 
 export default function Home() {
     return (
