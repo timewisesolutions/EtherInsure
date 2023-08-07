@@ -1,0 +1,12 @@
+.connect-wallet-light {
+    height: 46px !important;
+    background : darkcyan !important;
+    color : whitesmoke !important;
+    font-weight: 600 !important;
+}
+.connect-wallet-dark {
+    height: 46px !important;
+    background : lightcoral !important;
+    color : whitesmoke !important;
+    font-weight: 600 !important;
+}
