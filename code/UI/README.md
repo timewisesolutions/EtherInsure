@@ -14,7 +14,7 @@ $ cd code/UI
 ```
 
 ```
-yarn install  # installs all the packages
+yarn add  # installs all the packages
 ```
 
 ## To run
