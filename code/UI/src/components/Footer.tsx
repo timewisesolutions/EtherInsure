@@ -1,14 +1,19 @@
-import { Box, Flex, Text } from '@chakra-ui/react'
+import { Box, Flex, Text, useColorModeValue } from '@chakra-ui/react'
 
 const Footer = () => {
   return (
     <>
         <Box
-            justifySelf={'center'}
+            position="sticky"
+            bottom="0"
             alignItems={'center'}
             flexDirection={'column'}
+            borderRadius='md'
+            background="#38383d"
+            mx={10}
+            rounded={'md'}
         >
-            <Text as='h2' fontSize={18} fontWeight={'semibold'} textAlign='center'>
+            <Text as='h2' fontSize={18} fontWeight={'semibold'} textAlign='center' color={useColorModeValue('green.300', 'green.400')}>
             Contact Us
             </Text>
             <Flex justifyContent={'space-between'} px={10} py={2}>
