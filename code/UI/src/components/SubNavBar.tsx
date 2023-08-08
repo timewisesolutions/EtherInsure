@@ -8,19 +8,27 @@ import {
     Stack,
 } from '@chakra-ui/react'
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
+import { useNavigate } from 'react-router-dom'
+
+
 
 interface Props {
     children: React.ReactNode
 }
 
-const Links = ['Policy', 'Claims', 'Dashboard']
+interface PageProps{
+    currentPage : string
+}
+
+const Links = ['Home', 'Policy', 'Claims', 'Dashboard']
 
 
 const NavLink = (props: Props) => {
     const { children } = props
+    const navigate = useNavigate()
 
-    const handleClik = () => {
-        console.log("In Clik")
+    const handlePageClick= (page:React.ReactNode) => {
+        navigate(`/${page}`)
     }
 
     return (
@@ -34,14 +42,14 @@ const NavLink = (props: Props) => {
                 textDecoration: 'none',
                 bg: useColorModeValue('gray.200', 'gray.700'),
             }}
-            onClick={handleClik}
+            onClick={() => handlePageClick(children)}
             href={'#'}>
             {children}
         </Box>
     )
 }
 
-const SubNavBar = () => {
+const SubNavBar = ({currentPage}: PageProps) => {
     const { isOpen, onOpen, onClose } = useDisclosure()
 
     return (
@@ -56,10 +64,13 @@ const SubNavBar = () => {
                         onClick={isOpen ? onClose : onOpen}
                     />
                     <HStack spacing={8} alignItems={'center'}>
-                        <Box>Home</Box>
                         <HStack as={'nav'} spacing={4} display={{ base: 'none', md: 'flex' }}>
                             {Links.map((link) => (
+                                currentPage === link ? (
+                                   <Box key={link}>{link}</Box>
+                                ) : (
                                 <NavLink key={link}>{link}</NavLink>
+                                )
                             ))}
                         </HStack>
                     </HStack>
@@ -69,7 +80,11 @@ const SubNavBar = () => {
                     <Box pb={4} display={{ md: 'none' }}>
                         <Stack as={'nav'} spacing={4}>
                             {Links.map((link) => (
+                                currentPage === link ? (
+                                   <Box key={link}>{link}</Box>
+                                ) : (
                                 <NavLink key={link}>{link}</NavLink>
+                                )
                             ))}
                         </Stack>
                     </Box>

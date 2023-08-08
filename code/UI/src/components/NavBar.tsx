@@ -4,7 +4,10 @@ import ColorModeSwitch from './ColorModeSwitch'
 import SubNavBar from './SubNavBar'
 import ButtonConnect from './ButtonConnect'
 
-const NavBar = () => {
+interface PageProps{
+    currentPage : string
+}
+const NavBar = ({currentPage}:PageProps) => {
     return (
         <HStack justify='space-between' padding='10px'>
             <Box display={{ base: 'None', md: 'flex' }} alignItems='baseline'>
@@ -13,7 +16,7 @@ const NavBar = () => {
                 <Text fontSize='xs' fontWeight='bold' as='i' color='orange.500' p='1'>(A Pet Insurance Company) </Text>
             </Box>
             <Box display='flex' alignItems='baseline' justifyContent="space-between" gap={10}>
-                <SubNavBar />
+                <SubNavBar currentPage={currentPage}/>
                 <ButtonConnect/>
                 <ColorModeSwitch />
             </Box>
