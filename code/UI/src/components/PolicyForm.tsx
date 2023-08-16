@@ -1,8 +1,8 @@
 
 import {useToast, Box, Button, Container, Flex, Input, Select,Text, VStack } from '@chakra-ui/react'
-import { useState } from 'react';
+import { useState } from 'react'
 import { useForm} from "react-hook-form"
-
+import {PetInfoContextValue } from "@/context/PetInfoContext"
 
 interface IFormInput {
     breed: string
@@ -14,26 +14,13 @@ interface IFormInput {
 }
 
 interface Props{
-    onSetPolicyFormVisible : () => void;
+    onClearPolicyFormVisible : () => void;
+    onSetPolicyPayment : (petInfo: PetInfoContextValue) => void;
 }
 
-const PolicyForm = ({onSetPolicyFormVisible}: Props) => {
-
-    const petInfo = {
-        Type: "",
-        breed: "",
-        name: "",
-        age: {
-            years: 0,
-            months: 0,
-        },
-        location: {
-            city: "",
-            zipCode: "",
-        },
-        preMedicalCondition: "",
-        image : ""
-    };
+const PolicyForm = ({onClearPolicyFormVisible, 
+                    onSetPolicyPayment
+                    }: Props) => {
 
     const {
         register,
@@ -56,32 +43,40 @@ const PolicyForm = ({onSetPolicyFormVisible}: Props) => {
     }
 
     const onSubmit = (data: IFormInput) => {
-        petInfo.Type = petType
-        petInfo.breed = data["breed"]
-        petInfo.name = data["name"]
-        petInfo.age.years = data["ageYears"]
-        petInfo.age.months = data["ageMonths"]
-        petInfo.location.city = data["location"]
-        petInfo.location.zipCode = data["zip"]
-        petInfo.preMedicalCondition = petPreMedicalCond
-        console.log("after petInfo: ", petInfo)
+
+        const newPetInfo: PetInfoContextValue ={
+            Type : petType,
+            breed : data["breed"],
+            name : data["name"],
+            age: {
+                years: data["ageYears"],
+                months: data["ageMonths"],
+            },
+            location: {
+                city: data["location"],
+                zipCode: data["zip"],
+            },
+            preMedicalCondition: petPreMedicalCond,
+            image : ''
+         }
         // clear input form
         reset()
         setPetType('')
         setPreMedicalCond('')
         // Check PreMed Condition exists, then we move back to Policy Page
-        if(petInfo.preMedicalCondition === 'Yes'){
-            toast({ title: "Sorry! No Insurance Possible for pets with Pre-Medical condition.", 
+        onClearPolicyFormVisible()
+        if(newPetInfo.preMedicalCondition === 'Yes'){
+            toast({ title: "Sorry! We dont have Insurance for pets with Pre-Medical condition.", 
                     status: 'error',
                     position: 'top'
-
                 })
-            onSetPolicyFormVisible()
+            return
         }
-        // Now handle how to send data to IPFS and then update the screen with 
-        // the new policy created for the user
+        // Now handle payment (in payment component) and only later after payment success
+        // send data to IPFS and then update the screen with 
+        // the new policy created for the user with Policy details
+        onSetPolicyPayment(newPetInfo)
     };
-
 
     return (
         <Flex as="main" role="main" direction="column" flex="1" py={{ base: "2", lg: "5" }}>
@@ -189,7 +184,6 @@ const PolicyForm = ({onSetPolicyFormVisible}: Props) => {
                 </Box>
             </Container>
         </Flex>
-
     );
 }
 export default PolicyForm
