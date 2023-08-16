@@ -1,22 +1,34 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
 
-  const lockedAmount = ethers.parseEther("0.001");
+  //const policy = await ethers.deployContract("PetPolicy");
+  //await policy.waitForDeployment();
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+   const [deployer] = await ethers.getSigners();
 
-  await lock.waitForDeployment();
+    console.log(
+    "Deploying contracts with the account:",
+    deployer.address
+    );
 
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+    const Policy = await ethers.getContractFactory("PetPolicy");
+    let contract = await Policy.deploy(0,0,0);
+    const policy  = await contract.waitForDeployment()
+
+    console.log("PetPolicy deployed at:", await policy.getAddress());
+
+    const DogPolicy = await ethers.getContractFactory("DogPolicy");
+    contract = await DogPolicy.deploy();
+    const dogpolicy  = await contract.waitForDeployment()
+    console.log("DogPolicy deployed at:", await dogpolicy.getAddress());
+
+    const CatPolicy = await ethers.getContractFactory("CatPolicy");
+    contract = await CatPolicy.deploy();
+    const catpolicy  = await contract.waitForDeployment()
+    console.log("CatPolicy deployed at:", await catpolicy.getAddress());
+
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
