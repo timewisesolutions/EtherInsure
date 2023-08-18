@@ -2,9 +2,9 @@ import {
   time,
   loadFixture,
 } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { toNumber } from "ethers";
 
 describe("Policy", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -64,6 +64,58 @@ describe("Policy", function () {
             const maxValue = await catPolicy.get_max_insured_value()
             expect(maxValue).to.equal(20000);
         });
+    })
+
+    describe("Create a Pet Policy", function () {
+        //DogURI:  bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link
+        //CatURI:  bafybeifx3i5nmjzqbrrxe4w4wvtnyasas727mthfnawq7wk7ndebm46vmm.ipfs.w3s.link
+        // await token.connect(addr1)['mint(uint256)'](maxMintAmountPerTx, {value: ethers.utils.parseEther("1.0")});
+
+        it("Create Dog & Cat Policy", async function () {
+            const { dogPolicy, catPolicy } = await loadFixture(deployPolicyFixture);
+            const DOG_URI = "bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link"
+            const CAT_URI = "bafybeifx3i5nmjzqbrrxe4w4wvtnyasas727mthfnawq7wk7ndebm46vmm.ipfs.w3s.link"
+            let tx, rc, policy_count, policy_details, policy_premium, policy_no, t, formattedDate
+            // first for Dog
+            tx = await dogPolicy.create_policy(DOG_URI,{value: ethers.parseEther("1.0")})
+            rc = await tx.wait(); // 0ms, as tx is already confirmed
+            console.log("------------------------------------")
+            //Event Params: NewPolicy(policyHolder, policyNumber,insured_amount)
+            policy_no = rc?.logs[0].args[1] 
+            console.log("Dog PolicyNumber:", policy_no)
+            expect(rc?.logs[0].args[2]).to.eq(25000)
+            policy_count = await dogPolicy.total_policies_count()
+            expect(policy_count).to.eq(1)
+
+            tx = await dogPolicy.get_policy_details(policy_no)
+            policy_details = tx[0]
+            policy_premium = tx[1]
+            t = toNumber(policy_details[2])
+            formattedDate = new Date(t * 1000);
+            console.log("Dog Policy creation time:", formattedDate.toUTCString())
+            console.log("Dog policy details:",policy_details)
+            console.log("Dog premium paid:", policy_premium)
+            console.log("------------------------------------")
+            // for Cat
+            tx = await catPolicy.create_policy(CAT_URI,{value: ethers.parseEther("1.0")})
+            rc = await tx.wait(); // 0ms, as tx is already confirmed
+            //Event Params: NewPolicy(policyHolder, policyNumber,insured_amount)
+            policy_no = rc?.logs[0].args[1] 
+            console.log("Cat PolicyNumber:", policy_no)
+            expect(rc?.logs[0].args[2]).to.eq(20000)
+            policy_count = await catPolicy.total_policies_count()
+            expect(policy_count).to.eq(1)
+
+            tx = await catPolicy.get_policy_details(policy_no)
+            policy_details = tx[0]
+            policy_premium = tx[1]
+            t = toNumber(policy_details[2])
+            formattedDate = new Date(t * 1000);
+            console.log("Cat Policy creation time:", formattedDate.toUTCString())
+            console.log("Cat policy details:",policy_details)
+            console.log("Cat premium paid:", policy_premium)
+       });
+
 
     })
 });
