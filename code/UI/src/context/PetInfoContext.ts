@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 
 export type PetInfoContextValue = {
-    Type: string;
+    type: string;
     breed: string;
     name: string;
     age: {

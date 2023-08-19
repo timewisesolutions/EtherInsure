@@ -1,6 +1,6 @@
 
 import {useToast, Box, Button, Container, Flex, Input, Select,Text, VStack } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm} from "react-hook-form"
 import {PetInfoContextValue } from "@/context/PetInfoContext"
 
@@ -11,6 +11,7 @@ interface IFormInput {
     ageMonths : number
     location: string
     zip : string
+    image : string
 }
 
 interface Props{
@@ -32,6 +33,7 @@ const PolicyForm = ({onClearPolicyFormVisible,
 
     const [petType, setPetType] = useState("")
     const [petPreMedicalCond, setPreMedicalCond] = useState("")
+    const [imagepreview, setImagePreview] = useState('')
     const toast = useToast()
 
     const handlePetType = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -42,10 +44,20 @@ const PolicyForm = ({onClearPolicyFormVisible,
         setPreMedicalCond(event.target.value)
     }
 
+    const onImageUpload = (event: React.ChangeEvent<HTMLInputElement>) =>{
+        event.preventDefault()
+        if(event.target.files)
+        {
+            const file = event.target.files[0]
+            const urlImage = URL.createObjectURL(file)
+            setImagePreview(urlImage);
+        }
+    }
+
     const onSubmit = (data: IFormInput) => {
 
         const newPetInfo: PetInfoContextValue ={
-            Type : petType,
+            type : petType,
             breed : data["breed"],
             name : data["name"],
             age: {
@@ -57,7 +69,7 @@ const PolicyForm = ({onClearPolicyFormVisible,
                 zipCode: data["zip"],
             },
             preMedicalCondition: petPreMedicalCond,
-            image : ''
+            image : imagepreview
          }
         // clear input form
         reset()
@@ -91,7 +103,11 @@ const PolicyForm = ({onClearPolicyFormVisible,
                             onChange={(e)=>{handlePetType(e)}}
                             placeholder="Type"
                             py={1}
+                            size={'sm'}
+                            rounded={'md'}
+                            fontWeight={'bold'}
                             fontSize={14}
+                            fontFamily={'fantasy'}
                             fontStyle={'italic'}
                             >
                             <option value="Dog">Dog</option>
@@ -101,6 +117,8 @@ const PolicyForm = ({onClearPolicyFormVisible,
                         <Text as='b' fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Breed</Text>
                         <Input
                             placeholder='breed'
+                            size={'sm'}
+                            rounded={'md'}
                             {...register("breed", {
                             required: true,
                             maxLength: 50,
@@ -117,7 +135,9 @@ const PolicyForm = ({onClearPolicyFormVisible,
                         <br/>
                         <Text as='b'fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Name</Text>
                         <Input
-                            placeholder='name' 
+                            placeholder='name'
+                            size={'sm'}
+                            rounded={'md'}
                             {...register("name", { pattern: /^[A-Za-z]+$/i })} />
                             {errors?.name?.type === "pattern" && (
                                 <p>Alphabetical characters only</p>
@@ -126,6 +146,8 @@ const PolicyForm = ({onClearPolicyFormVisible,
                         <Text as='b'fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Age(Years)</Text>
                         <Input 
                             placeholder='years'
+                            size={'sm'}
+                            rounded={'md'}
                             {...register("ageYears", {required:true, min: 1, max: 11 })} />
                             {errors.ageYears && (
                                 <p>You Pet must not be more than 12 years old</p>
@@ -134,6 +156,8 @@ const PolicyForm = ({onClearPolicyFormVisible,
                         <Text as='b'fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Age(Months)</Text>
                         <Input
                             placeholder='months'
+                            size={'sm'}
+                            rounded={'md'}
                             {...register("ageMonths", { required:true, min: 0, max: 11 })} />
                             {errors.ageMonths && (
                                 <p>Months should be less than 11</p>
@@ -142,6 +166,8 @@ const PolicyForm = ({onClearPolicyFormVisible,
                         <Text as='b'fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Location</Text>
                         <Input
                             placeholder='city'
+                            size={'sm'}
+                            rounded={'md'}
                             {...register("location", {required:true, pattern: /^[A-Za-z]+$/i })} />
                             {errors.location?.type==='pattern' && (
                                 <p>City name must be Alphabetical </p>
@@ -150,16 +176,34 @@ const PolicyForm = ({onClearPolicyFormVisible,
                         <Text as='b'fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Zip</Text>
                         <Input
                             placeholder='zip'
+                            size={'sm'}
+                            rounded={'md'}
                             {...register("zip", {required:true, pattern: /^[0-9]+$/i })} />
                             {errors.zip?.type==='pattern' && (
                                 <p>Zip code must be numeric</p>
                             )}
+                        <Text as='b'fontSize={14} fontFamily={'fantasy'} fontStyle={'italic'}>Pet Image</Text>
+                        <Input
+                            type = 'file'
+                            placeholder='image'
+                            size={'sm'}
+                            rounded={'md'}
+                            {...register("image", {
+                                required: true,
+                            })}
+                            onChange={(e) =>onImageUpload(e)}
+
+                        />
+                            {errors?.image?.type === "required"}
                         <br/>
                         <Select
                             value={petPreMedicalCond}
                             isRequired
                             onChange={(e)=>{handlePreMedicalCond(e)}}
                             placeholder="Medical history"
+                            size={'sm'}
+                            rounded={'md'}
+                            fontWeight={'bold'}
                             py={1}
                             fontSize={14}
                             fontStyle={'italic'}
@@ -167,7 +211,6 @@ const PolicyForm = ({onClearPolicyFormVisible,
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                         </Select>
-
                         <br/>
                         <Button
                             mt={3}
