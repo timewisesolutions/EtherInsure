@@ -116,7 +116,11 @@ contract PetPolicy {
             policy_holders.push(msg.sender);
             _exists[msg.sender] = true;
         }
-        emit NewPolicy(msg.sender, newpolicy.policyNumber, max_value_insured);
+        emit NewPolicy(
+            msg.sender,
+            newpolicy.policyNumber,
+            newpolicy.max_amount_insured
+        );
 
         //return extra payment
         if (msg.value > premium)
