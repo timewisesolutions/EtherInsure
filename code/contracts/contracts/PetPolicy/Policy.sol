@@ -137,4 +137,8 @@ contract PetPolicy {
         }
         assert(false);
     }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }
