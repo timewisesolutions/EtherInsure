@@ -41,17 +41,17 @@ async function main() {
 }
 
 function syncWriteFile(filename: string, data: any) {
-    const dir_path = '/home/yogi/code/EtherInsure/code/UI/src/services/blockchain/abi'
+    const dir_path = '../UI/src/services/blockchain/abi'
   /**
    * flags:
    *  - w = Open file for reading and writing. File is created if not exists
    *  - a+ = Open file for reading and appending. The file is created if not exists
    */
-  writeFileSync(join(dir_path, filename), data, {
-    flag: 'w',
-  });
-  //const contents = readFileSync(join(dir_path, filename), 'utf-8');
-  //return contents;
+    writeFileSync(join(dir_path, filename), data, {
+      flag: 'w',
+    });
+    //const contents = readFileSync(join(dir_path, filename), 'utf-8');
+    //return contents;
 }
 
 
