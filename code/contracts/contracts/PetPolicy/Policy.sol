@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
 contract PetPolicy {
     // there will be accident cover, accident + illness cover and comprehensive
@@ -22,15 +23,16 @@ contract PetPolicy {
         address policyHolder;
         string petIpfsLink;
         uint256 createdTime;
+        uint256 endTime;
         uint256 policyNumber;
         uint256 max_amount_insured;
     }
-    mapping(uint256 => uint256[]) premiumsPaid; // policyNumber : premium Paid
-    mapping(address => Policy[]) petPolicies;
+    mapping(address => uint256[]) public premiumsPaid; // address : premiums Paid
+    mapping(address => Policy[]) public petPolicies;
     address[] policy_holders; // put policy holders address here
     // Additional Map: useful for eliminating if address does not
     //exist in policy_holders list
-    mapping(address => bool) _exists;
+    mapping(address => bool) public _exists;
 
     // events
     event NewPolicy(
@@ -85,6 +87,7 @@ contract PetPolicy {
     function create_policy(
         string memory _petIpfsLink
     ) public payable returns (uint256) {
+        console.log("create policy  msg sender: %s", msg.sender);
         require(bytes(_petIpfsLink).length != 0, "Invalid Pet IPFS link");
         uint256 premium = get_premium_per_annum_inEth();
         require(msg.value >= premium, "Insufficient funds!");
@@ -93,7 +96,7 @@ contract PetPolicy {
         newpolicy.policyHolder = msg.sender;
         newpolicy.petIpfsLink = _petIpfsLink;
         newpolicy.createdTime = block.timestamp;
-
+        newpolicy.endTime = block.timestamp + 60 * 60 * 24 * 365;
         newpolicy.policyNumber =
             uint(
                 keccak256(
@@ -108,7 +111,7 @@ contract PetPolicy {
 
         newpolicy.max_amount_insured = max_value_insured;
         petPolicies[msg.sender].push(newpolicy); // update petPolicies map
-        premiumsPaid[newpolicy.policyNumber].push(premium); // update premium paid
+        premiumsPaid[msg.sender].push(premium); // update premium paid
 
         total_policies_count++;
 
@@ -123,8 +126,12 @@ contract PetPolicy {
         );
 
         //return extra payment
-        if (msg.value > premium)
-            payable(msg.sender).transfer(msg.value - premium);
+        if (msg.value > premium){
+            (bool sent,  ) = msg.sender.call{value: (msg.value - premium)}("");
+            require(sent, "Failed to return extra payment");
+            //payable(msg.sender).transfer(msg.value - premium);
+        }
+
 
         return newpolicy.policyNumber;
     }
@@ -132,16 +139,28 @@ contract PetPolicy {
     function get_policy_details(
         uint256 _policyNumber
     ) public view returns (Policy memory p, uint256 premiumpaid) {
+        console.log("get policy details msg sender: %s",  msg.sender);
         require(_exists[msg.sender], "You dont have any policy");
         Policy[] memory policies = petPolicies[msg.sender];
-        for (uint i = 0; i <= policies.length; i++) {
+        for (uint i = 0; i < policies.length; i++) {
             if (policies[i].policyNumber == _policyNumber) {
-                return (policies[i], premiumsPaid[_policyNumber][i]);
+                require (policies[i].policyHolder == msg.sender, "Not your policy");
+                require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
+                return (policies[i], premiumsPaid[msg.sender][i]);
             }
         }
         assert(false);
     }
+    function get_premiums_paid(address addr)  public view returns (uint256[] memory) {
+        return premiumsPaid[addr];
+    }
 
+    function get_pet_policies(address addr)  public view returns (Policy[] memory) {
+        return petPolicies[addr];
+    }
+    function get_exists(address addr)  public  view returns (bool) {
+        return _exists[addr];
+    }
     receive() external payable {}
 
     fallback() external payable {}
