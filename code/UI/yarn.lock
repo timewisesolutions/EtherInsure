@@ -2646,7 +2646,7 @@
     react-qr-code "^2.0.11"
     tiny-invariant "^1.2.0"
 
-"@thirdweb-dev/sdk@3.10.42", "@thirdweb-dev/sdk@^3":
+"@thirdweb-dev/sdk@3.10.42":
   version "3.10.42"
   resolved "https://registry.yarnpkg.com/@thirdweb-dev/sdk/-/sdk-3.10.42.tgz#9c80099cdf1b69c038a28be33f7fdffe155bd6d0"
   integrity sha512-OxE3jnQpCnq94tvtC7o2ox/PCdj7vX/yvKg7kAjsAoE495X2Sp7940eIqoEq2Bpe/q1tcSdup/vpaIBKsDWiMA==
