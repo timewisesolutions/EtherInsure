@@ -75,7 +75,7 @@ describe("Policy", function () {
             const { dogPolicy, catPolicy } = await loadFixture(deployPolicyFixture);
             const DOG_URI = "bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link"
             const CAT_URI = "bafybeifx3i5nmjzqbrrxe4w4wvtnyasas727mthfnawq7wk7ndebm46vmm.ipfs.w3s.link"
-            let tx, rc, policy_count, policy_details, policy_premium, policy_no, t, formattedDate
+            let tx, rc, policy_count, policy_details, policy_premium, t, formattedDate, policy_no
             // first for Dog
             tx = await dogPolicy.create_policy(DOG_URI,{value: ethers.parseEther("1.0")})
             rc = await tx.wait(); // 0ms, as tx is already confirmed
@@ -115,7 +115,119 @@ describe("Policy", function () {
             console.log("Cat policy details:",policy_details)
             console.log("Cat premium paid:", policy_premium)
        });
-
-
     })
+
+    describe("Multiple Dog Pet Policies", function () {
+        //DogURI:  bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link
+        //CatURI:  bafybeifx3i5nmjzqbrrxe4w4wvtnyasas727mthfnawq7wk7ndebm46vmm.ipfs.w3s.link
+        // await token.connect(addr1)['mint(uint256)'](maxMintAmountPerTx, {value: ethers.utils.parseEther("1.0")});
+
+        it("Create Dog Policies", async function () {
+            const { dogPolicy } = await loadFixture(deployPolicyFixture);
+            const DOG_URI = "bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link"
+            let tx, rc, policy_count, policy_details, policy_premium, t, formattedDate, policy_no
+            // Dog 1
+            tx = await dogPolicy.create_policy(DOG_URI,{value: ethers.parseEther("1.0")})
+            rc = await tx.wait(); // 0ms, as tx is already confirmed
+            console.log("------------------------------------")
+            //Event Params: NewPolicy(policyHolder, policyNumber,insured_amount)
+            policy_no = rc?.logs[0].args[1] 
+            console.log("Dog PolicyNumber:", policy_no)
+            expect(rc?.logs[0].args[2]).to.eq(25000)
+            policy_count = await dogPolicy.total_policies_count()
+            expect(policy_count).to.eq(1)
+
+            tx = await dogPolicy.get_policy_details(policy_no)
+            policy_details = tx[0]
+            policy_premium = tx[1]
+            t = toNumber(policy_details[2])
+            formattedDate = new Date(t * 1000);
+            console.log("Dog Policy creation time:", formattedDate.toUTCString())
+            console.log("Dog policy details:",policy_details)
+            console.log("Dog premium paid:", policy_premium)
+            console.log("------------------------------------")
+
+
+            // Dog 2
+            tx = await dogPolicy.create_policy(DOG_URI,{value: ethers.parseEther("1.0")})
+            rc = await tx.wait(); // 0ms, as tx is already confirmed
+            console.log("------------------------------------")
+            //Event Params: NewPolicy(policyHolder, policyNumber,insured_amount)
+            policy_no = rc?.logs[0].args[1] 
+            console.log("Dog PolicyNumber:", policy_no)
+            expect(rc?.logs[0].args[2]).to.eq(25000)
+            policy_count = await dogPolicy.total_policies_count()
+            expect(policy_count).to.eq(2)
+
+            tx = await dogPolicy.get_policy_details(policy_no)
+            policy_details = tx[0]
+            policy_premium = tx[1]
+            t = toNumber(policy_details[2])
+            formattedDate = new Date(t * 1000);
+            console.log("Dog Policy creation time:", formattedDate.toUTCString())
+            console.log("Dog policy details:",policy_details)
+            console.log("Dog premium paid:", policy_premium)
+            console.log("------------------------------------")
+
+            // Dog 3
+            tx = await dogPolicy.create_policy(DOG_URI,{value: ethers.parseEther("1.0")})
+            rc = await tx.wait(); // 0ms, as tx is already confirmed
+            console.log("------------------------------------")
+            //Event Params: NewPolicy(policyHolder, policyNumber,insured_amount)
+            policy_no = rc?.logs[0].args[1] 
+            console.log("Dog PolicyNumber:", policy_no)
+            expect(rc?.logs[0].args[2]).to.eq(25000)
+            policy_count = await dogPolicy.total_policies_count()
+            expect(policy_count).to.eq(3)
+
+            tx = await dogPolicy.get_policy_details(policy_no)
+            policy_details = tx[0]
+            policy_premium = tx[1]
+            t = toNumber(policy_details[2])
+            formattedDate = new Date(t * 1000);
+            console.log("Dog Policy creation time:", formattedDate.toUTCString())
+            console.log("Dog policy details:",policy_details)
+            console.log("Dog premium paid:", policy_premium)
+            console.log("------------------------------------")
+
+        })
+    });
+
+    describe("Create Pet Policy from other accounts", function () {
+        //DogURI:  bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link
+        //CatURI:  bafybeifx3i5nmjzqbrrxe4w4wvtnyasas727mthfnawq7wk7ndebm46vmm.ipfs.w3s.link
+        // await token.connect(addr1)['mint(uint256)'](maxMintAmountPerTx, {value: ethers.utils.parseEther("1.0")});
+
+        it("Create Dog Policy from other accounts", async function () {
+            const { dogPolicy, otherAccount} = await loadFixture(deployPolicyFixture);
+            const DOG_URI = "bafybeifreg7kd4by4sozofs37nybx3s7nqrat2hyzzz36nub6ouusivb4e.ipfs.w3s.link"
+            let tx, rc, policy_count, policy_details, policy_premium, t, formattedDate, policy_no
+            // first for Dog
+            tx = await dogPolicy.connect(otherAccount).create_policy(DOG_URI,{value: ethers.parseEther("1.0")})
+            rc = await tx.wait(); // 0ms, as tx is already confirmed
+            console.log("------------------------------------")
+            //Event Params: NewPolicy(policyHolder, policyNumber,insured_amount)
+            policy_no = rc?.logs[0].args[1] 
+            console.log("Dog PolicyNumber:", policy_no)
+            expect(rc?.logs[0].args[2]).to.eq(25000)
+            policy_count = await dogPolicy.connect(otherAccount).total_policies_count()
+            expect(policy_count).to.eq(1)
+            tx = await dogPolicy.get_pet_policies(otherAccount.address)
+            console.log("pet policies by", otherAccount.address, 'are:',tx)
+
+            tx = await dogPolicy.get_premiums_paid(otherAccount.address)
+            console.log("premiums paid by", otherAccount.address, 'are:',tx)
+
+            tx = await dogPolicy.connect(otherAccount).get_policy_details(policy_no)
+            policy_details = tx[0]
+            policy_premium = tx[1]
+            t = toNumber(policy_details[2])
+            formattedDate = new Date(t * 1000);
+            console.log("Dog Policy creation time:", formattedDate.toUTCString())
+            console.log("Dog policy details:",policy_details)
+            console.log("Dog premium paid:", policy_premium)
+            console.log("------------------------------------")
+        })
+
+    });
 });
