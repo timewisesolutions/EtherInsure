@@ -16,3 +16,13 @@ export type PetInfoContextValue = {
     image: string;
 }
 export const PetInfoContext =  createContext<PetInfoContextValue | undefined>(undefined);
+
+
+export type PetPolicyDetails = {
+    policyHolder : string
+    petIpfsLink  : string
+    createdTime  : number
+    endTime      : number
+    policyNumber : number
+    max_amount_insured : number
+}
