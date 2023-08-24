@@ -1,5 +1,5 @@
 import { policy_get_premium, policy_get_premiumEth, create_pet_policy, instantiateContract } from "@/services/blockchain/Blockchain"
-import { AbsoluteCenter, Box, Button, Container, Flex, Image, SimpleGrid, Text, useToast } from "@chakra-ui/react"
+import { AbsoluteCenter, Box, Button, Container, Flex, Image, SimpleGrid, Text, useColorModeValue, useToast } from "@chakra-ui/react"
 import {useContext, useEffect, useState } from "react";
 import {PetInfoContext } from "@/context/PetInfoContext"
 import { useAddress, useSigner } from "@thirdweb-dev/react";
@@ -26,9 +26,6 @@ const PolicyPayment = ()  => {
     const toast = useToast()
     const walletAddress = useAddress()
     signer =  useSigner() as ethers.Signer
-
-    // create contract instance
-    instantiateContract(petInfoContext?.type as string)
 
     const handleGetPremium = async () => {
         const premium = await policy_get_premium();
@@ -66,8 +63,14 @@ const PolicyPayment = ()  => {
     }
 
     useEffect(() => {
-        handleGetPremium();
-    }, [petInfoContext]);
+        async function createContract() {
+            const result = await instantiateContract(petInfoContext?.type as string)
+            if(result === true){
+                handleGetPremium()
+            }
+        }
+        createContract()
+    }, [petInfoContext])
 
     return (
     <>
@@ -81,19 +84,19 @@ const PolicyPayment = ()  => {
                     <Text fontWeight={'semibold'} fontFamily={'mono'} color={'aqua'} fontSize={20}  textAlign="center">Your Pet Information:</Text>
                     <br/>
                     <SimpleGrid textAlign={'center'} columns={2} spacingX='20px' spacingY='10px' >
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Type:</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Type:</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'}   height='20px'>{petInfoContext.type}</Box>
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Breed:</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Breed:</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'} height='20px'>{petInfoContext.breed}</Box>
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Name:</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Name:</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'} height='20px'>{petInfoContext.name}</Box>
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Age:</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Age:</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'} height='20px'>{petInfoContext.age.years} years, {petInfoContext.age.months} months</Box>
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Location:</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Location:</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'} height='20px'>{petInfoContext.location.city}, {petInfoContext.location.zipCode}</Box>
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Premium(to pay):</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Premium(to pay):</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'} height='20px'>{premiumEth} eth</Box>
-                        <Box color={'palegoldenrod'} fontWeight={'bold'} height='20px'>Premium(in Aud $ equal):</Box>
+                        <Box color={useColorModeValue('yellow.600', 'palegoldenrod')} fontWeight={'bold'} height='20px'>Premium(in Aud $ equal):</Box>
                         <Box fontStyle={'italic'} fontFamily={'cursive'} fontWeight={'semibold'} height='20px'>$ {premium}</Box>
                         <AbsoluteCenter alignContent={'center'}>
                             <Image alignItems={'center'}  borderRadius='full' boxSize='60px' src={petInfoContext.image}/>

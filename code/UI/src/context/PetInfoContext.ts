@@ -21,8 +21,8 @@ export const PetInfoContext =  createContext<PetInfoContextValue | undefined>(un
 export type PetPolicyDetails = {
     policyHolder : string
     petIpfsLink  : string
-    createdTime  : number
-    endTime      : number
+    createdTime  : string
+    endTime      : string
     policyNumber : number
     max_amount_insured : number
 }
