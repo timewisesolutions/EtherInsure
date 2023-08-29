@@ -1,4 +1,4 @@
-import { Box, HStack, Image, Text } from '@chakra-ui/react'
+import { Box, HStack, Image, Stack } from '@chakra-ui/react'
 import logo from "@/assets/logo.webp"
 import ColorModeSwitch from './ColorModeSwitch'
 import SubNavBar from './SubNavBar'
@@ -10,12 +10,18 @@ interface PageProps{
 const NavBar = ({currentPage}:PageProps) => {
     return (
         <HStack justify='space-between' padding='10px'>
-            <Box display={{ base: 'None', md: 'flex' }} alignItems='baseline'>
-                <Image src={logo} borderRadius='full' boxSize='50px' />
-                <Text fontSize='md' fontWeight='bold' as='i' color='orange.500'>EtherInsure </Text>
-                <Text fontSize='xs' fontWeight='bold' as='i' color='orange.500' p='1'>(A Pet Insurance Company) </Text>
+            <Box display={{ base: 'None', md: 'flex'}} alignItems='center' >
+                <Image src={logo} borderRadius='full' boxSize='25px' />
+                <Stack direction={['row', 'column']} spacing='0.1' align={''}>
+                    <Box  fontSize='smaller' fontWeight='bold' as='i' color='orange.500'>
+                        EtherInsure
+                    </Box>
+                    <Box  fontSize={'xs'} fontWeight='normal' as='i' color='orange.500' pl={1}>
+                       (A Pet Insurance Company)
+                    </Box>
+                </Stack>
             </Box>
-            <Box display='flex' alignItems='baseline' justifyContent="space-between" gap={10}>
+            <Box display='flex' justifyContent="space-between" gap={15}>
                 <SubNavBar currentPage={currentPage}/>
                 <ButtonConnect/>
                 <ColorModeSwitch />
