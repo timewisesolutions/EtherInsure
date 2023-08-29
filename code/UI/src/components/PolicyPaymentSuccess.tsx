@@ -1,6 +1,6 @@
 import { PetInfoContext, PetPolicyDetails } from '@/context/PetInfoContext';
 import { get_policy_details } from '@/services/blockchain/Blockchain';
-import { Box, Container, SimpleGrid,Text, useColorModeValue } from '@chakra-ui/react'
+import { Box, Container, Flex, SimpleGrid,Text, useColorModeValue } from '@chakra-ui/react'
 import { useAddress} from '@thirdweb-dev/react';
 import { BigNumber } from 'ethers';
 import { useContext, useEffect, useState } from 'react'
@@ -51,7 +51,7 @@ const PolicyPaymentSuccess = ({ policyNo }:Props) => {
     <>
     {petInfoContext? (
         <Container flex="1">
-            <Box as="section" bg="bg-surface" py={{ base: '12', md: '2' }} minH='sm'>
+            <Box as="section" bg="bg-surface" my={{ base: '-6', md: '-10' }} minH='sm'>
                 <Text fontWeight={'semibold'} fontFamily={'mono'} color={'aqua'} fontSize={20}  textAlign="center">Your Policy Details:</Text>
                 <br/>
                     <SimpleGrid textAlign={'center'} columns={2} spacingX='20px' spacingY='10px' >
