@@ -1,6 +1,6 @@
 .connect-wallet-light {
     height: 46px !important;
-    background : darkcyan !important;
+    background : rgba(139, 113, 0, 0.508) !important;
     color : whitesmoke !important;
     font-weight: 600 !important;
 }
