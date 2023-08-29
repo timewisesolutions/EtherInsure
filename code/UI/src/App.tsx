@@ -3,15 +3,19 @@ import Policy from "@/pages/Policy"
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Claims from "./pages/Claims";
 import Dashboard from "./pages/Dashboard";
-import { ThirdwebProvider, useChain, useChainId } from "@thirdweb-dev/react";
-import {Sepolia, Goerli, Localhost} from '@thirdweb-dev/chains'
+import { ThirdwebProvider} from "@thirdweb-dev/react";
+import {Sepolia, Goerli, Localhost, Ethereum, Chain} from '@thirdweb-dev/chains'
+import ChainContext from "@/context/Chain";
+import { useState } from "react";
 
 const App = () => {
-    const activeChain = Localhost;
+    const [selectedChain, setSelectedChain] = useState<Chain>(Goerli);
+    //const activeChain = Localhost
     return (
+        <ChainContext.Provider value={{ selectedChain, setSelectedChain }}>
         <ThirdwebProvider
             clientId={import.meta.env.VITE_TEMPLATE_CLIENT_ID}
-            activeChain={activeChain}
+            activeChain={selectedChain}
         >
         <BrowserRouter>
             <Routes>
@@ -24,6 +28,7 @@ const App = () => {
             </Routes>
         </BrowserRouter>
         </ThirdwebProvider>
+        </ChainContext.Provider>
     );
 }
 export default App;
