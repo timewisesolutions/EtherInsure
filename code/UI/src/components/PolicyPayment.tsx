@@ -22,6 +22,7 @@ const PolicyPayment = ()  => {
     const [isWalletConnected, setIsWalletConnected] = useState(true)
     const [paymentSuccess, setPaymentSuccess] = useState(false) 
     const [policyNo, setPolicyNo] = useState(-1)
+    const [contract, setContract] = useState(false)
 
     const toast = useToast()
     const walletAddress = useAddress()
@@ -68,6 +69,7 @@ const PolicyPayment = ()  => {
             if(result === true){
                 handleGetPremium()
             }
+            setContract(result)
         }
         createContract()
     }, [petInfoContext])
@@ -104,8 +106,12 @@ const PolicyPayment = ()  => {
                     </SimpleGrid>
                     <br/>
                     <Flex justifyContent="center" alignItems="center" >
+                        { contract ? (
                         <Button onClick={payCreatePolicy} isLoading={loadState} loadingText={loadText} m='auto' colorScheme='blue'
                                 variant="solid" _hover={{ bg: 'blue.300' }}>Pay</Button>
+                        ) : (
+                            <>Contract not found on this network!</>  
+                        )}
                     </Flex>
                     </>
                 )
