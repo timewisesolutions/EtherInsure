@@ -1,46 +1,92 @@
-import { instantiateContract } from "@/services/blockchain/Blockchain";
+import {
+  get_policy_exists_from_policy_number,
+  instantiateContract,
+} from "@/services/blockchain/Blockchain";
 import {
   Box,
   Button,
   Container,
   Flex,
-  HStack,
   Input,
   Select,
   Text,
+  Toast,
   VStack,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { vet_names, vet_emails } from "@/config/user_config";
+import { useToast } from "@chakra-ui/react";
+
 interface Props {
   clearUserClaims: () => void;
 }
-type FormValues = {
+interface ClaimPetInfo {
+  petType: string;
+  vetName: string;
   policyNumber: number;
-};
+  claimAmount: number;
+}
+
 const ClaimsUserMain = ({ clearUserClaims }: Props) => {
-  const [petType, setPetType] = useState("");
   const [loadState, setLoadState] = useState(false);
+  const claimPetInfo: ClaimPetInfo = {
+    petType: "",
+    vetName: "",
+    policyNumber: 0,
+    claimAmount: 0,
+  };
+  const toast = useToast();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>();
+  } = useForm<ClaimPetInfo>();
   const handlePetType = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setPetType(event.target.value);
+    claimPetInfo.petType = event.target.value;
   };
-  const onSubmit = (data: FormValues) => {
-    console.log(data.policyNumber);
+  const handleVetName = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    claimPetInfo.vetName = event.target.value;
+  };
+
+  const onSubmit = async (data: ClaimPetInfo) => {
+    claimPetInfo.claimAmount = data.claimAmount;
+    claimPetInfo.policyNumber = data.policyNumber;
     setLoadState(true);
-  };
-  useEffect(() => {
-    async function createContract() {
-      const result = await instantiateContract(petType);
-      if (result === true) {
+    let res = await instantiateContract(claimPetInfo.petType);
+    if (res === true) {
+      let { tx, error } = await get_policy_exists_from_policy_number(
+        claimPetInfo.policyNumber
+      );
+      if (tx === true) {
+        setLoadState(false);
+      } else {
+        // There is an error in transaction, handle it
+        if (error === "You dont have any policy") {
+          toast({
+            title: "No policy found for this policy number!",
+            status: "error",
+            position: "top",
+          });
+        } else if (error === "Policy premium not paid") {
+          toast({
+            title: "Policy premium not paid!",
+            status: "error",
+            position: "top",
+          });
+        } else if (error === "Policy expired") {
+          toast({
+            title: "Policy expired!",
+            status: "error",
+            position: "top",
+          });
+        }
+        clearUserClaims();
+        setLoadState(false);
       }
     }
-    createContract();
-  }, []);
+  };
 
   return (
     <Flex
@@ -94,6 +140,53 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
                   Policy Number must be numeric
                 </Box>
               )}
+
+              <Text
+                fontSize={12}
+                fontFamily={"fantasy"}
+                fontStyle={"italic"}
+                fontWeight={"bold"}
+              >
+                Claim Amount (Aud $)
+              </Text>
+              <Input
+                placeholder="claim amount"
+                maxWidth={"230px"}
+                size={"sm"}
+                rounded={"md"}
+                {...register("claimAmount", {
+                  required: true,
+                  pattern: /^[0-9]+$/i,
+                })}
+              />
+              {errors.claimAmount?.type === "pattern" && (
+                <Box color={"red"} fontSize={10}>
+                  Amount must be numeric
+                </Box>
+              )}
+
+              <Select
+                isRequired
+                placeholder="Dr."
+                onChange={(e) => {
+                  handleVetName(e);
+                }}
+                py={1}
+                size={"xs"}
+                rounded={"md"}
+                fontWeight={"bold"}
+                fontSize={14}
+                fontFamily={"fantasy"}
+                fontStyle={"italic"}
+                maxWidth={"230px"}
+              >
+                <option>{vet_names[0]}</option>
+                <option>{vet_names[1]}</option>
+                <option>{vet_names[2]}</option>
+                <option>{vet_names[3]}</option>
+                <option>{vet_names[4]}</option>
+              </Select>
+
               <Select
                 isRequired
                 placeholder="Type"
