@@ -17,11 +17,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { vet_names, vet_emails } from "@/config/user_config";
 import { useToast } from "@chakra-ui/react";
+import EmailContactForm from "./EmailContactForm";
 
 interface Props {
   clearUserClaims: () => void;
 }
-interface ClaimPetInfo {
+export interface ClaimPetInfo {
   petType: string;
   vetName: string;
   policyNumber: number;
@@ -30,12 +31,14 @@ interface ClaimPetInfo {
 
 const ClaimsUserMain = ({ clearUserClaims }: Props) => {
   const [loadState, setLoadState] = useState(false);
-  const claimPetInfo: ClaimPetInfo = {
+  const [sendEmail, setSendEmail] = useState(false);
+  const [claimPetInfo, setClaimPetInfo] = useState<ClaimPetInfo>({
     petType: "",
     vetName: "",
     policyNumber: 0,
     claimAmount: 0,
-  };
+  });
+
   const toast = useToast();
 
   const {
@@ -61,6 +64,9 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
       );
       if (tx === true) {
         setLoadState(false);
+        // Policy exists, now send email to the vet to sign the claim
+        console.log("before email:", claimPetInfo);
+        setSendEmail(true);
       } else {
         // There is an error in transaction, handle it
         if (error === "You dont have any policy") {
@@ -88,7 +94,9 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
     }
   };
 
-  return (
+  return sendEmail ? (
+    <EmailContactForm claim_info={claimPetInfo} />
+  ) : (
     <Flex
       as="main"
       role="main"
@@ -218,8 +226,9 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
                 width="100px"
                 isLoading={loadState}
               >
-                Submit
+                Continue
               </Button>
+
               <Button
                 mt={3}
                 size={"sm"}
