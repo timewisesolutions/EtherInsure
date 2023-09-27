@@ -114,6 +114,29 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_policyNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      }
+    ],
+    "name": "executeClaim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "aud_amount",
         "type": "uint256"
       }
@@ -221,6 +244,26 @@
             "internalType": "uint256",
             "name": "max_amount_insured",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "submitClaimTime",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "executeClaimTime",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct PetPolicy.Policy[]",
@@ -285,6 +328,26 @@
             "internalType": "uint256",
             "name": "max_amount_insured",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "submitClaimTime",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "executeClaimTime",
+            "type": "uint256[]"
           }
         ],
         "internalType": "struct PetPolicy.Policy",
@@ -295,6 +358,25 @@
         "internalType": "uint256",
         "name": "premiumpaid",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_policyNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "get_policy_exists_from_policy_number",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -402,6 +484,16 @@
         "internalType": "uint256",
         "name": "max_amount_insured",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "claimCount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "claimAmount",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -455,6 +547,24 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_policyNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "submitClaim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
