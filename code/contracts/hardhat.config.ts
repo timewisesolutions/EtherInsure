@@ -3,31 +3,36 @@ import "@nomicfoundation/hardhat-toolbox";
 import * as dotenv from "dotenv";
 dotenv.config();
 // goerli
-const ALCHEMY_GOERLI_API_KEY = process.env.ALCHEMY_GOERLI_API_KEY
-const GOERLI_DEPLOYER_KEY = process.env.GOERLI_DEPLOYER_KEY
+const ALCHEMY_GOERLI_API_KEY = process.env.ALCHEMY_GOERLI_API_KEY;
+const GOERLI_DEPLOYER_KEY = process.env.GOERLI_DEPLOYER_KEY;
 // sepolia
-const ALCHEMY_SEPOLIA_API_KEY = process.env.ALCHEMY_SEPOLIA_API_KEY
-const SEPOLIA_DEPLOYER_KEY = process.env.SEPOLIA_DEPLOYER_KEY
+const ALCHEMY_SEPOLIA_API_KEY = process.env.ALCHEMY_SEPOLIA_API_KEY;
+const SEPOLIA_DEPLOYER_KEY = process.env.SEPOLIA_DEPLOYER_KEY;
 
 const config: HardhatUserConfig = {
-    solidity: "0.8.19",
-    networks: {
-            hardhat: {
-                chainId: 1337
-            },
+  solidity: {
+    version: "0.8.19",
+    settings: {
+      optimizer: { enabled: true, runs: 200 },
+    },
+  },
+  networks: {
+    hardhat: {
+      chainId: 1337,
+    },
 
-            goerli: {
-                chainId: 5,
-                url: `https://eth-goerli.g.alchemy.com/v2/${ALCHEMY_GOERLI_API_KEY}`,
-                accounts: [`${GOERLI_DEPLOYER_KEY}`]
-            },
-    
-            sepolia: {
-                chainId: 11155111,
-                url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_SEPOLIA_API_KEY}`,
-                accounts: [`${SEPOLIA_DEPLOYER_KEY}`]
-        },
-    }
+    goerli: {
+      chainId: 5,
+      url: `https://eth-goerli.g.alchemy.com/v2/${ALCHEMY_GOERLI_API_KEY}`,
+      accounts: [`${GOERLI_DEPLOYER_KEY}`],
+    },
+
+    sepolia: {
+      chainId: 11155111,
+      url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_SEPOLIA_API_KEY}`,
+      accounts: [`${SEPOLIA_DEPLOYER_KEY}`],
+    },
+  },
 };
 
 export default config;
