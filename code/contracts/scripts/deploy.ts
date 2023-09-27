@@ -1,59 +1,94 @@
 import { ethers, artifacts } from "hardhat";
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { writeFileSync } from "fs";
+import { join } from "path";
+import {
+  get_company_addresses_localhost,
+  get_registered_vet_addresses_localhost,
+  get_vaultInvesters_localhost,
+} from "../config/config";
+import { TransactionRequest } from "ethers";
 
 async function main() {
+  const [deployer, ...signers] = await ethers.getSigners();
+  const signer19 = signers[18];
 
-  //const policy = await ethers.deployContract("PetPolicy");
-  //await policy.waitForDeployment();
+  console.log("Deploying contracts with the account:", deployer.address);
 
-   const [deployer] = await ethers.getSigners();
+  const Policy = await ethers.getContractFactory("PetPolicy");
+  let contract = await Policy.deploy(0, 0, 0);
+  const policy = await contract.waitForDeployment();
+  console.log("PetPolicy deployed at:", await policy.getAddress());
 
-    console.log(
-    "Deploying contracts with the account:",
-    deployer.address
-    );
+  const DogPolicy = await ethers.getContractFactory("DogPolicy");
+  contract = await DogPolicy.deploy();
+  const dogpolicy = await contract.waitForDeployment();
+  console.log("DogPolicy deployed at:", await dogpolicy.getAddress());
 
-    const Policy = await ethers.getContractFactory("PetPolicy");
-    let contract = await Policy.deploy(0,0,0);
-    const policy  = await contract.waitForDeployment()
+  const CatPolicy = await ethers.getContractFactory("CatPolicy");
+  contract = await CatPolicy.deploy();
+  const catpolicy = await contract.waitForDeployment();
+  console.log("CatPolicy deployed at:", await catpolicy.getAddress());
 
-    console.log("PetPolicy deployed at:", await policy.getAddress());
+  let abidata = await artifacts.readArtifact("PetPolicy");
+  syncWriteFile("Policy.json", JSON.stringify(abidata.abi, null, 2));
 
-    const DogPolicy = await ethers.getContractFactory("DogPolicy");
-    contract = await DogPolicy.deploy();
-    const dogpolicy  = await contract.waitForDeployment()
-    console.log("DogPolicy deployed at:", await dogpolicy.getAddress());
+  abidata = await artifacts.readArtifact("DogPolicy");
+  syncWriteFile("Dog.json", JSON.stringify(abidata.abi, null, 2));
 
-    const CatPolicy = await ethers.getContractFactory("CatPolicy");
-    contract = await CatPolicy.deploy();
-    const catpolicy  = await contract.waitForDeployment()
-    console.log("CatPolicy deployed at:", await catpolicy.getAddress());
+  abidata = await artifacts.readArtifact("CatPolicy");
+  syncWriteFile("Cat.json", JSON.stringify(abidata.abi, null, 2));
 
-    let abidata =  await artifacts.readArtifact("PetPolicy")
-    syncWriteFile('Policy.json', JSON.stringify(abidata.abi, null, 2))
+  // Deploy EtherPool with balance of 100 Ethers
+  const Vault = await ethers.getContractFactory("Vault");
+  const vault_investers = get_vaultInvesters_localhost();
+  // Iterate over the entries of the map.
+  const investers = [...vault_investers.keys()];
+  const shares = [...vault_investers.values()];
+  let txn = await Vault.deploy(investers, shares);
+  const vault = await txn.waitForDeployment();
+  console.log("Vault deployed at:", await vault.getAddress());
+  console.log(
+    "Vault balance before:",
+    ethers.formatEther(await vault.get_balance())
+  );
+  const transaction = await vault.connect(signer19).depositEther({
+    value: ethers.parseUnits("100", "ether"),
+  });
+  console.log(
+    "Vault balance after:",
+    ethers.formatEther(await vault.get_balance())
+  );
+  const provider = ethers.provider;
+  const balance = await provider.getBalance(signer19);
+  console.log("Wallet signer19 balance:", ethers.formatEther(balance));
+  // deploy multisig, for which we first read the config params for the addresses of the constructor
+  const company = get_company_addresses_localhost();
+  const vet = get_registered_vet_addresses_localhost();
+  const owners = [...company, ...vet];
+  const MultiSig = await ethers.getContractFactory("MultiSigWallet");
+  txn = await MultiSig.deploy(owners, 3);
+  const multisig = await txn.waitForDeployment();
+  console.log("Multisig deployed at:", await multisig.getAddress());
+  abidata = await artifacts.readArtifact("MultiSigWallet");
+  syncWriteFile("MultiSigWallet.json", JSON.stringify(abidata.abi, null, 2));
 
-    abidata =  await artifacts.readArtifact("DogPolicy")
-    syncWriteFile('Dog.json', JSON.stringify(abidata.abi, null, 2))
-
-    abidata =  await artifacts.readArtifact("CatPolicy")
-    syncWriteFile('Cat.json', JSON.stringify(abidata.abi, null, 2))
+  //console.log("total confirmations:", await tx.numConfirmationsRequired());
+  //console.log("Owners:", await tx.getOwners());
 }
 
 function syncWriteFile(filename: string, data: any) {
-    const dir_path = '../UI/src/services/blockchain/abi'
+  const dir_path = "../UI/src/services/blockchain/abi";
   /**
    * flags:
    *  - w = Open file for reading and writing. File is created if not exists
    *  - a+ = Open file for reading and appending. The file is created if not exists
    */
-    writeFileSync(join(dir_path, filename), data, {
-      flag: 'w',
-    });
-    //const contents = readFileSync(join(dir_path, filename), 'utf-8');
-    //return contents;
+  writeFileSync(join(dir_path, filename), data, {
+    flag: "w",
+  });
+  //const contents = readFileSync(join(dir_path, filename), 'utf-8');
+  //return contents;
 }
-
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
