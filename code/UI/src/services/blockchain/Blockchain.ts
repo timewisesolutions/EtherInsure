@@ -5,12 +5,13 @@ import { signer } from "@/components/Signer";
 import POLICY_ABI from "@/services/blockchain/abi/Policy.json";
 import CATPOLICY_ABI from "@/services/blockchain/abi/Cat.json";
 import DOGPOLICY_ABI from "@/services/blockchain/abi/Dog.json";
+import MULTISIG_ABI from "@/services/blockchain/abi/MultiSigWallet.json";
 //import config from '@/services/blockchain/config.json';
 import { config } from "@/services/blockchain/config";
 
 let contract: ethers.Contract | null = null;
-let changeInPetType = "";
-
+let multiSigContract: ethers.Contract | null = null;
+/*
 export const instantiateContract = async (petType: string) => {
   const chainId = await signer.getChainId();
   const index = config.findIndex((obj) => obj.chainId === chainId);
@@ -35,22 +36,41 @@ export const instantiateContract = async (petType: string) => {
   console.error("Contract not found");
   return false;
 };
-
-/*
-export const instantiateContract = async (petType:string) => {
-
-    if(petType == 'Dog'){
-        const dogAddress = config[31337].DogPolicy.address
-        contract = new ethers.Contract(dogAddress, DOGPOLICY_ABI,signer)
-    }else if(petType == 'Cat'){
-        const catPolicyAddress = config[31337].CatPolicy.address;
-        contract = new ethers.Contract(catPolicyAddress, CATPOLICY_ABI,signer);
-    }
-    else{
-        console.error("Contract not found");
-    }
-}
 */
+
+// These functions belong to Policy contract
+export const instantiatePetContract = async (petType: string) => {
+  const policyAddressAndAbi = await getPetTypeDeployedAddress(petType);
+  const policyAddress = policyAddressAndAbi?.policyAddress;
+  const policyAbi = policyAddressAndAbi?.policyAbi;
+
+  if (policyAddress && policyAbi) {
+    contract = new ethers.Contract(policyAddress, policyAbi, signer);
+    return true;
+  }
+  console.error("Contract not found");
+  return false;
+};
+
+export const getPetTypeDeployedAddress = async (petType: string) => {
+  const chainId = await signer.getChainId();
+  const index = config.findIndex((obj) => obj.chainId === chainId);
+  console.log("chain id and index", chainId, index);
+
+  if (index !== -1) {
+    let policyAddress;
+    let policyAbi;
+
+    if (petType === "Dog") {
+      policyAddress = config[index].DogPolicy?.address;
+      policyAbi = DOGPOLICY_ABI;
+    } else if (petType === "Cat") {
+      policyAddress = config[index].CatPolicy?.address;
+      policyAbi = CATPOLICY_ABI;
+    }
+    return { policyAddress, policyAbi };
+  }
+};
 
 export const policy_get_premium = async () => {
   const valueBigInt = await contract?.get_premium_per_annum();
@@ -103,4 +123,54 @@ export const get_policy_exists_from_policy_number = async (
     error = e.reason;
   }
   return { tx, error };
+};
+
+// These functions belong to MultiSig contract
+export const instantiateMultiSigWalletContract = async () => {
+  const chainId = await signer.getChainId();
+  const index = config.findIndex((obj) => obj.chainId === chainId);
+  console.log("chain id and index", chainId, index);
+  if (index !== -1) {
+    const multiSigWalletAddress = config[index].Multisig?.address;
+    const multiSigAbi = MULTISIG_ABI;
+    if (multiSigWalletAddress && multiSigAbi) {
+      multiSigContract = new ethers.Contract(
+        multiSigWalletAddress,
+        multiSigAbi,
+        signer
+      );
+      return true;
+    }
+    console.error("MultiSigContract not found");
+    return false;
+  }
+};
+
+export const submitTx = async (
+  petPolicyAddress: string,
+  policyNo: number,
+  amount: number,
+  callback: any
+) => {
+  let txIndex;
+  let to;
+  const tx = await multiSigContract
+    ?.connect?.(signer)
+    .submitTx(petPolicyAddress, policyNo, amount);
+
+  // Wait for the event SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
+  const receipt = await tx.wait();
+  multiSigContract?.on(
+    "SubmitTransaction",
+    async (_msgsender, _txIndex, _to, _value, _, event) => {
+      /*       console.log("event rxd:", event);
+      console.log("msgsender:", _msgsender);
+      console.log("txIndex:", _txIndex);
+      console.log("to:", _to);
+      console.log("value:", _value); */
+      txIndex = _txIndex.toString();
+      to = _to;
+      callback(_txIndex);
+    }
+  );
 };

@@ -2,7 +2,7 @@ import {
   policy_get_premium,
   policy_get_premiumEth,
   create_pet_policy,
-  instantiateContract,
+  instantiatePetContract,
 } from "@/services/blockchain/Blockchain";
 import {
   AbsoluteCenter,
@@ -85,7 +85,9 @@ const PolicyPayment = () => {
 
   useEffect(() => {
     async function createContract() {
-      const result = await instantiateContract(petInfoContext?.type as string);
+      const result = await instantiatePetContract(
+        petInfoContext?.type as string
+      );
       if (result === true) {
         handleGetPremium();
       }

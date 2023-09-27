@@ -1,6 +1,9 @@
 import {
+  getPetTypeDeployedAddress,
   get_policy_exists_from_policy_number,
-  instantiateContract,
+  instantiateMultiSigWalletContract,
+  instantiatePetContract,
+  submitTx,
 } from "@/services/blockchain/Blockchain";
 import {
   Box,
@@ -27,6 +30,7 @@ export interface ClaimPetInfo {
   vetName: string;
   policyNumber: number;
   claimAmount: number;
+  claimNo: number;
 }
 
 const ClaimsUserMain = ({ clearUserClaims }: Props) => {
@@ -37,6 +41,7 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
     vetName: "",
     policyNumber: 0,
     claimAmount: 0,
+    claimNo: -1,
   });
 
   const toast = useToast();
@@ -52,21 +57,40 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
   const handleVetName = (event: React.ChangeEvent<HTMLSelectElement>) => {
     claimPetInfo.vetName = event.target.value;
   };
-
+  const submitTx_eventCallback = async (claimNo: number) => {
+    console.log("claimNo:", claimNo);
+    claimPetInfo.claimNo = claimNo;
+    setLoadState(false);
+    setSendEmail(true);
+  };
   const onSubmit = async (data: ClaimPetInfo) => {
     claimPetInfo.claimAmount = data.claimAmount;
     claimPetInfo.policyNumber = data.policyNumber;
     setLoadState(true);
-    let res = await instantiateContract(claimPetInfo.petType);
+    let res = await instantiatePetContract(claimPetInfo.petType);
     if (res === true) {
       let { tx, error } = await get_policy_exists_from_policy_number(
         claimPetInfo.policyNumber
       );
       if (tx === true) {
-        setLoadState(false);
         // Policy exists, now send email to the vet to sign the claim
         console.log("before email:", claimPetInfo);
-        setSendEmail(true);
+        const policyAddressAndAbi = await getPetTypeDeployedAddress(
+          claimPetInfo.petType
+        );
+        const policyAddress = policyAddressAndAbi?.policyAddress;
+        if (policyAddress) {
+          // call submit Tx in multisig contract with dog/cat policy, amount and policy no
+          let res = await instantiateMultiSigWalletContract();
+          if (res === true) {
+            await submitTx(
+              policyAddress,
+              claimPetInfo.policyNumber,
+              claimPetInfo.claimAmount,
+              submitTx_eventCallback
+            );
+          }
+        }
       } else {
         // There is an error in transaction, handle it
         if (error === "You dont have any policy") {
@@ -95,7 +119,10 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
   };
 
   return sendEmail ? (
-    <EmailContactForm claim_info={claimPetInfo} />
+    <EmailContactForm
+      claim_info={claimPetInfo}
+      clearUserClaims={clearUserClaims}
+    />
   ) : (
     <Flex
       as="main"

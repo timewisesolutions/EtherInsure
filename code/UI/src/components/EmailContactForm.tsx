@@ -1,16 +1,19 @@
 import React, { useRef } from "react";
 import emailjs from "@emailjs/browser";
 import { ClaimPetInfo } from "./ClaimsUserMain";
-import { Box, Container, Flex } from "@chakra-ui/react";
+import { Box, Container, Flex, Toast } from "@chakra-ui/react";
 import { vet_names, vet_emails } from "@/config/user_config";
+import { useToast } from "@chakra-ui/react";
 
 interface Props {
   claim_info: ClaimPetInfo;
+  clearUserClaims: () => void;
 }
-const EmailContactForm = ({ claim_info }: Props) => {
+const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
   const form = useRef<HTMLFormElement>(null);
   console.log("email claim info:", claim_info);
   const email = vet_emails.get(claim_info.vetName);
+  const toast = useToast();
 
   const sendEmail = (e: React.FormEvent) => {
     e.preventDefault(); // prevents the page from reloading when you hit “Send”
@@ -25,9 +28,23 @@ const EmailContactForm = ({ claim_info }: Props) => {
       .then(
         (result) => {
           // show the user a success message
+          console.log("Sent email success");
+          // Move to claims home page
+          toast({
+            title: "Send email success!",
+            status: "success",
+            position: "top",
+          });
+          clearUserClaims();
         },
         (error) => {
           // show the user an error
+          console.log("Email send error", error);
+          toast({
+            title: "Send email failure, Retry!",
+            status: "error",
+            position: "top",
+          });
         }
       );
   };
@@ -86,6 +103,15 @@ const EmailContactForm = ({ claim_info }: Props) => {
               readOnly
             />
             <br />
+            <label>Claim Number:</label>
+            <input
+              style={{ marginLeft: 20, marginBottom: 20, marginTop: 20 }}
+              type="text"
+              name="claim_number"
+              value={claim_info.claimNo}
+              readOnly
+            />
+            <br />
             <label>Amount(Aud $):</label>
             <input
               style={{ marginLeft: 20, marginBottom: 10 }}
@@ -95,11 +121,20 @@ const EmailContactForm = ({ claim_info }: Props) => {
               readOnly
             />
             <br />
-            <input
-              style={{ marginLeft: 20, marginBottom: 10 }}
+            <button
               type="submit"
+              onClick={sendEmail}
+              style={{
+                marginLeft: 20,
+                marginBottom: 10,
+                color: "white",
+                fontWeight: "bold",
+                background: "lightcoral",
+              }}
               value="Send"
-            />
+            >
+              Send
+            </button>
           </form>
         </Box>
       </Container>
@@ -110,11 +145,9 @@ const EmailContactForm = ({ claim_info }: Props) => {
 export default EmailContactForm;
 
 /*
-      <input type="text" name="user_name" />
-      <label>Email</label>
-      <input type="email" name="to_name" />
-      <label>Message</label>
-      <textarea name="message" />
-      <input type="submit" value="Send" />
-
+            <input
+              style={{ marginLeft: 20, marginBottom: 10 }}
+              type="submit"
+              value="Send"
+            />
 */
