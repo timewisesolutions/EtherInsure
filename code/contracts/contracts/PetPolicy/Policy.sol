@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.0;
 import "hardhat/console.sol";
+import "../EtherPool/Vault.sol";
+import "../Claims/MultiSigWallet.sol";
 
 contract PetPolicy {
     // there will be accident cover, accident + illness cover and comprehensive
@@ -12,7 +14,9 @@ contract PetPolicy {
     uint256 public immutable aud_to_eth;
     uint256 public immutable eth_to_aud;
     uint32 public total_policies_count; // count of total policies
-    uint32 public MAX_NO_POLICIES = 10000;
+    uint32 public MAX_NO_POLICIES = 10000; // helps generate random policy number
+
+
 
     enum PetType {
         DOG,
@@ -26,6 +30,10 @@ contract PetPolicy {
         uint256 endTime;
         uint256 policyNumber;
         uint256 max_amount_insured;
+        uint256 claimCount;
+        uint256 claimAmount; // should be always <= max_amount_insured
+        uint256[] submitClaimTime; // there can be multiple claims
+        uint256[] executeClaimTime;
     }
     mapping(address => uint256[]) public premiumsPaid; // address : premiums Paid
     mapping(address => Policy[]) public petPolicies;
@@ -52,7 +60,6 @@ contract PetPolicy {
         eth_to_aud = 2830;
         max_value_insured = _max_value_insured;
     }
-
     // get conversion value (aud to eth)
     function get_aud_to_eth(uint256 aud_amount) public view returns (uint256) {
         return (aud_to_eth * aud_amount) / (10 ** 18);
@@ -117,7 +124,7 @@ contract PetPolicy {
 
         if (!_exists[msg.sender]) {
             policy_holders.push(msg.sender);
-            _exists[msg.sender] = true;
+            _exists[msg.sender] = true; 
         }
         emit NewPolicy(
             msg.sender,
@@ -151,6 +158,7 @@ contract PetPolicy {
         }
         assert(false);
     }
+
     function get_premiums_paid(address addr)  public view returns (uint256[] memory) {
         return premiumsPaid[addr];
     }
@@ -158,9 +166,59 @@ contract PetPolicy {
     function get_pet_policies(address addr)  public view returns (Policy[] memory) {
         return petPolicies[addr];
     }
+
     function get_exists(address addr)  public  view returns (bool) {
         return _exists[addr];
     }
+
+    function get_policy_exists_from_policy_number(uint256 _policyNumber) public view returns (bool) {
+        require(_exists[msg.sender], "You dont have any policy");
+        Policy[] memory policies = petPolicies[msg.sender];
+        for (uint i = 0; i < policies.length; i++) {
+            if (policies[i].policyNumber == _policyNumber) {
+                require (policies[i].policyHolder == msg.sender, "Not your policy");
+                require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
+                require( block.timestamp < policies[i].endTime, "Policy expired");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Should be called by multisig wallet when a claim is submitted
+    function submitClaim(uint256 _policyNumber, uint256 _amount) external {
+        require(_exists[msg.sender], "You dont have any policy");
+        Policy[] storage policies = petPolicies[msg.sender];
+        for (uint i = 0; i < policies.length; i++) {
+            if (policies[i].policyNumber == _policyNumber) {
+                require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
+                require( block.timestamp < policies[i].endTime, "Policy expired");
+                require(_amount > 0 && _amount <= policies[i].max_amount_insured , "amount >0 and <maxAmount insured");
+                policies[i].claimCount = policies[i].claimCount + 1;
+                policies[i].claimAmount = _amount;
+                policies[i].submitClaimTime.push(block.timestamp);
+            }
+        }
+    }
+
+    function executeClaim(uint256 _policyNumber, uint256 _amount, address _vault) external {
+        require(_exists[msg.sender], "You dont have any policy");
+        Policy[] storage policies = petPolicies[msg.sender];
+        for (uint i = 0; i < policies.length; i++) {
+            if (policies[i].policyNumber == _policyNumber) {
+                require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
+                require( block.timestamp < policies[i].endTime, "Policy expired");
+                require(_amount > 0 && _amount <= policies[i].max_amount_insured , "amount >0 and <maxAmount insured");
+                uint256 amount_in_eth = _amount * aud_to_eth;
+                bool result = Vault(payable(_vault)).transferEther(policies[i].policyHolder, amount_in_eth);
+                if (result == true){
+                    policies[i].max_amount_insured -= _amount;
+                    policies[i].executeClaimTime.push(block.timestamp);
+                }
+            }
+        }
+    }
+
     receive() external payable {}
 
     fallback() external payable {}
