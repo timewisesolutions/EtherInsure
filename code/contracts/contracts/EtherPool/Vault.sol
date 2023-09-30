@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-
+import "hardhat/console.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 
 contract Vault is PaymentSplitter {
@@ -20,13 +20,13 @@ contract Vault is PaymentSplitter {
         emit PaymentReceived(_msgSender(), msg.value);
     }
 
-    function transferEther(address _to, uint256 _amount) external returns (bool){
-
+    function transferEther(address _to, uint256 _amount) external {
+        console.log("Contract Balance:", address(this).balance);
+        console.log("amount of ether sent:", _amount);
         require(_amount <= DANGER_MARK_LEVEL, "Not enough Ether");
-        uint256 amount = address(this).balance - _amount;
-        (bool sent, ) = _to.call{value: amount}("");
-        require(sent, "Failed to Claim Ether");
-        return true;
+        (bool sent, ) = _to.call{value: _amount}(""); 
+        console.log("Transfer Ether sent: %s", sent);
+        require(sent, "Failed to transfer Ether");
     }
 
 }

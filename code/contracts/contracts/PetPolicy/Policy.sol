@@ -56,8 +56,8 @@ contract PetPolicy {
     ) {
         premium_per_annum = (_premium_per_annum) * (10 ** 18);
         platform_fee_percent = (_platform_fee_percent);
-        aud_to_eth = 0.000353174 * (10 ** 18); // in wei or 0.000353174 ether
-        eth_to_aud = 2830;
+        aud_to_eth = 0.00039 * (10 ** 18); // in wei or 0.000353174 ether
+        eth_to_aud = 2588;
         max_value_insured = _max_value_insured;
     }
     // get conversion value (aud to eth)
@@ -195,26 +195,31 @@ contract PetPolicy {
                 require( block.timestamp < policies[i].endTime, "Policy expired");
                 require(_amount > 0 && _amount <= policies[i].max_amount_insured , "amount >0 and <maxAmount insured");
                 policies[i].claimCount = policies[i].claimCount + 1;
-                policies[i].claimAmount = _amount;
+                policies[i].claimAmount += _amount;
                 policies[i].submitClaimTime.push(block.timestamp);
+                break;
             }
         }
     }
 
-    function executeClaim(uint256 _policyNumber, uint256 _amount, address _vault) external {
-        require(_exists[msg.sender], "You dont have any policy");
-        Policy[] storage policies = petPolicies[msg.sender];
+    function executeClaim(uint256 _policyNumber,address claimerAddress, uint256 _amount, address _vault) external {
+        //uint256 claimTime;
+        Policy[] storage policies = petPolicies[claimerAddress];
         for (uint i = 0; i < policies.length; i++) {
             if (policies[i].policyNumber == _policyNumber) {
-                require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
+                require(policies[i].policyHolder == claimerAddress, "Wrong Claimer Address" );
+                require(premiumsPaid[claimerAddress][i] > 0, "Policy premium not paid");
                 require( block.timestamp < policies[i].endTime, "Policy expired");
                 require(_amount > 0 && _amount <= policies[i].max_amount_insured , "amount >0 and <maxAmount insured");
                 uint256 amount_in_eth = _amount * aud_to_eth;
-                bool result = Vault(payable(_vault)).transferEther(policies[i].policyHolder, amount_in_eth);
-                if (result == true){
+                (bool sent, ) = _vault.call(abi.encodeWithSignature("transferEther(address,uint256)", claimerAddress, amount_in_eth));
+                //Vault(payable(_vault)).transferEther(policies[i].policyHolder, amount_in_eth);
+                if (sent == true){
                     policies[i].max_amount_insured -= _amount;
                     policies[i].executeClaimTime.push(block.timestamp);
+                    //claimTime = block.timestamp;
                 }
+                break;
             }
         }
     }

@@ -11,6 +11,11 @@ contract MultiSigWallet {
         uint value,
         bytes data
     );
+    event ExecuteClaim(
+        uint256 policyNumber,
+        uint256 claimAmount,
+        uint256 claimTime
+    );
     event ConfirmTransaction(address indexed owner, uint indexed txIndex);
     event RevokeConfirmation(address indexed owner, uint indexed txIndex);
     event ExecuteTransaction(address indexed owner, uint indexed txIndex);
@@ -89,7 +94,7 @@ contract MultiSigWallet {
 */
     function submitTx(address _to, uint256 _policyNo, uint256 _amount) public  {
         // _to :  will be the address of petpolicy contract
-        bytes memory data = abi.encodePacked(_policyNo, _amount);
+        bytes memory data = abi.encode(_policyNo, _amount, msg.sender);
         require(msg.sender != address(0), "invalid owner");
         isOwner[msg.sender] = true;
         owners.push(msg.sender);
@@ -117,8 +122,9 @@ contract MultiSigWallet {
 
     function executeTx(uint _txIndex, address _vault) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
         Transaction storage transaction = transactions[_txIndex];
+        transaction.numConfirmations += 1;
+        isConfirmed[_txIndex][msg.sender] = true;
         address _to = transaction.to; // is the address of petpolicy contract
-        console.log("executeTx called");
         require(
             transaction.numConfirmations >= numConfirmationsRequired,
             "cannot execute tx"
@@ -127,8 +133,18 @@ contract MultiSigWallet {
         transaction.executed = true;
 
         // Execute the transaction data.
-        (uint256 policyNo, uint256 amount) = abi.decode(transaction.data, (uint256, uint256));
-        PetPolicy(payable(_to)).executeClaim(policyNo, amount, _vault);
+        (uint256 policyNo, uint256 amount, address claimerAddress) = abi.decode(transaction.data, (uint256, uint256, address));
+        //PetPolicy(payable(_to)).executeClaim(policyNo, claimerAddress, amount, _vault);
+        (bool sent, ) = _to.call(abi.encodeWithSignature("executeClaim(uint256,address,uint256,address)", policyNo, claimerAddress, amount, _vault));
+        if (sent == true){
+            emit ExecuteClaim(
+                    policyNo,
+                    amount,
+                    block.timestamp
+                );
+        }
+
+        //(bool sent, ) = _vault.call(abi.encodeWithSignature("transferEther(address,uint256)", claimerAddress, amount_in_eth));
     }
 
     function submitTransaction(
@@ -144,10 +160,9 @@ contract MultiSigWallet {
                 value: _value,
                 data: _data,
                 executed: false,
-                numConfirmations: 0
+                numConfirmations: 1 // User has to confirm
             })
         );
-
 
         emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
     }
