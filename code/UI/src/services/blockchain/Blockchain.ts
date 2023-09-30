@@ -1,11 +1,12 @@
 // Interaction with the blockchain
 
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { signer } from "@/components/Signer";
 import POLICY_ABI from "@/services/blockchain/abi/Policy.json";
 import CATPOLICY_ABI from "@/services/blockchain/abi/Cat.json";
 import DOGPOLICY_ABI from "@/services/blockchain/abi/Dog.json";
 import MULTISIG_ABI from "@/services/blockchain/abi/MultiSigWallet.json";
+
 //import config from '@/services/blockchain/config.json';
 import { config } from "@/services/blockchain/config";
 
@@ -163,14 +164,39 @@ export const submitTx = async (
   multiSigContract?.on(
     "SubmitTransaction",
     async (_msgsender, _txIndex, _to, _value, _, event) => {
-      /*       console.log("event rxd:", event);
-      console.log("msgsender:", _msgsender);
-      console.log("txIndex:", _txIndex);
-      console.log("to:", _to);
-      console.log("value:", _value); */
       txIndex = _txIndex.toString();
       to = _to;
       callback(_txIndex);
+    }
+  );
+};
+
+export const confirmTransaction = async (claimNo: number, callback: any) => {
+  const tx = await multiSigContract
+    ?.connect?.(signer)
+    .confirmTransaction(claimNo);
+  const receipt = await tx.wait();
+  multiSigContract?.on(
+    "ConfirmTransaction",
+    async (_msgsender, _txIndex, event) => {
+      callback(true);
+    }
+  );
+};
+
+export const executeTx = async (claimNo: number, callback: any) => {
+  console.log("execute Tx called");
+  const chainId = await signer.getChainId();
+  const index = config.findIndex((obj) => obj.chainId === chainId);
+  const vault_address = config[index].Vault?.address;
+  const tx = await multiSigContract
+    ?.connect?.(signer)
+    .executeTx(claimNo, vault_address);
+  const receipt = await tx.wait();
+  multiSigContract?.on(
+    "ExecuteClaim",
+    async (policyNo, amount, claimTime: BigNumber, event) => {
+      callback(claimTime);
     }
   );
 };

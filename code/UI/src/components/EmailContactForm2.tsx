@@ -1,18 +1,16 @@
 import React, { useRef } from "react";
 import emailjs from "@emailjs/browser";
-import { ClaimPetInfo } from "./ClaimsUserMain";
+import { VetPetApprovalInfo } from "./ClaimsVetMain";
 import { Box, Container, Flex, Toast } from "@chakra-ui/react";
-import { vet_names, vet_emails } from "@/config/user_config";
 import { useToast } from "@chakra-ui/react";
 
 interface Props {
-  claim_info: ClaimPetInfo;
-  clearUserClaims: () => void;
+  vet_approval_info: VetPetApprovalInfo;
+  clearVetClaims: () => void;
 }
-const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
+const EmailContactForm2 = ({ vet_approval_info, clearVetClaims }: Props) => {
+  const email = "yogidk@gmail.com";
   const form = useRef<HTMLFormElement>(null);
-  console.log("email claim info:", claim_info);
-  const email = vet_emails.get(claim_info.vetName);
   const toast = useToast();
 
   const sendEmail = (e: React.FormEvent) => {
@@ -21,27 +19,27 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
     emailjs
       .sendForm(
         "service_lz1kzpa",
-        "template_2epde78",
+        "template_yu71ocn",
         form.current ?? "",
         "3O_WuSTpBX6LbHsnY"
       )
       .then(
         (result) => {
           // show the user a success message
-          console.log("Sent email success");
+          console.log("Sent Vet email success");
           // Move to claims home page
           toast({
-            title: "Send email success!",
+            title: "Send Vet email success!",
             status: "success",
             position: "top",
           });
-          clearUserClaims();
+          clearVetClaims();
         },
         (error) => {
           // show the user an error
-          console.log("Email send error", error);
+          console.log("Vet Email send error", error);
           toast({
-            title: "Send email failure, Retry!",
+            title: "Vet Send email failure, Retry!",
             status: "error",
             position: "top",
           });
@@ -71,6 +69,8 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
               style={{ marginLeft: 20, marginBottom: 10 }}
               type="text"
               name="from_name"
+              value={"Dr." + vet_approval_info.vetName}
+              readOnly
             />
             <br />
             <label>To Name:</label>
@@ -78,7 +78,7 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
               style={{ marginLeft: 20, marginBottom: 10 }}
               type="text"
               name="to_name"
-              value={"Dr." + claim_info.vetName}
+              value={"EtherInsure Company"}
               readOnly
             />
             <br />
@@ -99,7 +99,7 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
               style={{ marginLeft: 20, marginBottom: 20, marginTop: 20 }}
               type="text"
               name="policy_number"
-              value={claim_info.policyNumber}
+              value={vet_approval_info.policyNumber}
               readOnly
             />
             <br />
@@ -108,16 +108,7 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
               style={{ marginLeft: 20, marginBottom: 20, marginTop: 20 }}
               type="text"
               name="claim_number"
-              value={claim_info.claimNo}
-              readOnly
-            />
-            <br />
-            <label>Amount(Aud $):</label>
-            <input
-              style={{ marginLeft: 20, marginBottom: 10 }}
-              type="text"
-              name="amount"
-              value={claim_info.claimAmount}
+              value={vet_approval_info.claimNo}
               readOnly
             />
             <br />
@@ -142,4 +133,4 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
   );
 };
 
-export default EmailContactForm;
+export default EmailContactForm2;

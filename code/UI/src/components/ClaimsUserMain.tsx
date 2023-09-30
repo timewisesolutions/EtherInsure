@@ -58,7 +58,6 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
     claimPetInfo.vetName = event.target.value;
   };
   const submitTx_eventCallback = async (claimNo: number) => {
-    console.log("claimNo:", claimNo);
     claimPetInfo.claimNo = claimNo;
     setLoadState(false);
     setSendEmail(true);
@@ -74,7 +73,6 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
       );
       if (tx === true) {
         // Policy exists, now send email to the vet to sign the claim
-        console.log("before email:", claimPetInfo);
         const policyAddressAndAbi = await getPetTypeDeployedAddress(
           claimPetInfo.petType
         );
