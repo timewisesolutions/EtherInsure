@@ -1,5 +1,9 @@
 import { useToast } from "@chakra-ui/react";
-import { useAddress, useSigner } from "@thirdweb-dev/react";
+import {
+  useAddress,
+  useSigner,
+  useConnectionStatus,
+} from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 
 let signer: ethers.Signer;
@@ -7,8 +11,9 @@ export { signer };
 
 const Signer = () => {
   const walletAddress = useAddress();
+  const connectionStatus = useConnectionStatus();
   const toast = useToast();
-  if (!walletAddress) {
+  if (connectionStatus !== "connected") {
     toast({
       title: "Connect Wallet First!",
       status: "error",
