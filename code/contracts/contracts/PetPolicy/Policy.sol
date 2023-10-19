@@ -143,9 +143,7 @@ contract PetPolicy {
         return newpolicy.policyNumber;
     }
 
-    function get_policy_details(
-        uint256 _policyNumber
-    ) public view returns (Policy memory p, uint256 premiumpaid) {
+    function checkPolicy(uint256 _policyNumber) internal view returns (Policy memory p, uint256 premiumpaid) {
         console.log("get policy details msg sender: %s",  msg.sender);
         require(_exists[msg.sender], "You dont have any policy");
         Policy[] memory policies = petPolicies[msg.sender];
@@ -157,6 +155,12 @@ contract PetPolicy {
             }
         }
         assert(false);
+    }
+
+    function get_policy_details(
+        uint256 _policyNumber
+    ) public view returns (Policy memory p, uint256 premiumpaid) {
+        return checkPolicy(_policyNumber);
     }
 
     function get_premiums_paid(address addr)  public view returns (uint256[] memory) {
@@ -172,23 +176,36 @@ contract PetPolicy {
     }
 
     function get_policy_exists_from_policy_number(uint256 _policyNumber) public view returns (bool) {
-        require(_exists[msg.sender], "You dont have any policy");
-        Policy[] memory policies = petPolicies[msg.sender];
-        for (uint i = 0; i < policies.length; i++) {
+        (Policy memory p, ) = checkPolicy(_policyNumber);
+        require(block.timestamp < p.endTime, "Policy expired");
+        return true;
+    }
+
+    function findPolicyIndex(Policy[] storage policies, uint256 _policyNumber) internal view returns (uint256) {
+        for (uint256 i = 0; i < policies.length; i++) {
             if (policies[i].policyNumber == _policyNumber) {
-                require (policies[i].policyHolder == msg.sender, "Not your policy");
-                require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
-                require( block.timestamp < policies[i].endTime, "Policy expired");
-                return true;
+                return i;
             }
-        }
-        return false;
+    }
+        return policies.length;
     }
 
     // Should be called by multisig wallet when a claim is submitted
     function submitClaim(uint256 _policyNumber, uint256 _amount) external {
         require(_exists[msg.sender], "You dont have any policy");
         Policy[] storage policies = petPolicies[msg.sender];
+        uint256 policyIndex = findPolicyIndex(policies, _policyNumber);
+        require(policyIndex != policies.length, "Policy not found");
+
+        Policy storage policy = policies[policyIndex];
+        require(premiumsPaid[msg.sender][policyIndex] > 0, "Policy premium not paid");
+        require(block.timestamp < policy.endTime, "Policy expired");
+        require(_amount > 0 && _amount <= policy.max_amount_insured, "amount >0 and <maxAmount insured");
+        
+        policy.claimCount = policy.claimCount + 1;
+        policy.claimAmount += _amount;
+        policy.submitClaimTime.push(block.timestamp);
+    /*
         for (uint i = 0; i < policies.length; i++) {
             if (policies[i].policyNumber == _policyNumber) {
                 require(premiumsPaid[msg.sender][i] > 0, "Policy premium not paid");
@@ -200,11 +217,28 @@ contract PetPolicy {
                 break;
             }
         }
+        */
     }
 
-    function executeClaim(uint256 _policyNumber,address claimerAddress, uint256 _amount, address _vault) external {
+    function executeClaim(uint256 _policyNumber,address _claimerAddress, uint256 _amount, address _vault) external {
         //uint256 claimTime;
-        Policy[] storage policies = petPolicies[claimerAddress];
+        Policy[] storage policies = petPolicies[_claimerAddress];
+        uint256 policyIndex = findPolicyIndex(policies, _policyNumber);
+        require(policyIndex != policies.length, "Policy not found");
+
+        Policy storage policy = policies[policyIndex];
+        require(policy.policyHolder == _claimerAddress, "Wrong Claimer Address");
+        require(premiumsPaid[_claimerAddress][policyIndex] > 0, "Policy premium not paid");
+        require(block.timestamp < policy.endTime, "Policy expired");
+        require(_amount > 0 && _amount <= policy.max_amount_insured, "amount >0 and <maxAmount insured");
+        uint256 amount_in_eth = _amount * aud_to_eth;
+        (bool sent, ) = _vault.call(abi.encodeWithSignature("transferEther(address,uint256)", _claimerAddress, amount_in_eth));
+        if (sent == true){
+            policy.max_amount_insured -= _amount;
+            policy.executeClaimTime.push(block.timestamp);
+        }
+
+    /*
         for (uint i = 0; i < policies.length; i++) {
             if (policies[i].policyNumber == _policyNumber) {
                 require(policies[i].policyHolder == claimerAddress, "Wrong Claimer Address" );
@@ -222,6 +256,7 @@ contract PetPolicy {
                 break;
             }
         }
+     */
     }
 
     receive() external payable {}

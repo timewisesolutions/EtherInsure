@@ -119,7 +119,7 @@
       },
       {
         "internalType": "address",
-        "name": "claimerAddress",
+        "name": "_claimerAddress",
         "type": "address"
       },
       {
