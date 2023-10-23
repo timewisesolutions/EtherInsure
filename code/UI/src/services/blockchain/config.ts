@@ -20,6 +20,21 @@ export const config = [
 
   {
     chainId: 11155111,
+    PetPolicy: {
+      address: "0x07D55B08874295F41E46446d3AD54AB5fF42D7dd",
+    },
+    DogPolicy: {
+      address: "0xCF2F785467CCAD24614645Aa31906527AbB5a19b",
+    },
+    CatPolicy: {
+      address: "0x3eAff1e4876f565E00354Ec7ACdea65c617FEd83",
+    },
+    Vault: {
+      address: "0xC721ec5fF9DCF5441364D2B0115AAD8dA2DA5f2a",
+    },
+    Multisig: {
+      address: "0x3f6552D58e8Fb6BeB56F5E31BC0cB94E75eF12E0",
+    },
   },
 
   {

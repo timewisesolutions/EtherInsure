@@ -97,7 +97,9 @@ export const create_pet_policy = async (
   const tx = await contract?.connect?.(signer).create_policy(ipfs_link, {
     value: ethers.utils.parseEther(premiumEth),
   });
-  const receipt = await tx.wait();
+  //const receipt = await tx.wait();
+  //console.log("tx:", tx);
+  //console.log("receipt:", receipt);
   contract?.on(
     "NewPolicy",
     async (policyHolder, policyNumber, insured_amount, event) => {
@@ -160,7 +162,7 @@ export const submitTx = async (
     .submitTx(petPolicyAddress, policyNo, amount);
 
   // Wait for the event SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
-  const receipt = await tx.wait();
+  //const receipt = await tx.wait();
   multiSigContract?.on(
     "SubmitTransaction",
     async (_msgsender, _txIndex, _to, _value, _, event) => {
@@ -175,7 +177,7 @@ export const confirmTransaction = async (claimNo: number, callback: any) => {
   const tx = await multiSigContract
     ?.connect?.(signer)
     .confirmTransaction(claimNo);
-  const receipt = await tx.wait();
+  //const receipt = await tx.wait();
   multiSigContract?.on(
     "ConfirmTransaction",
     async (_msgsender, _txIndex, event) => {
@@ -192,7 +194,7 @@ export const executeTx = async (claimNo: number, callback: any) => {
   const tx = await multiSigContract
     ?.connect?.(signer)
     .executeTx(claimNo, vault_address);
-  const receipt = await tx.wait();
+  //const receipt = await tx.wait();
   multiSigContract?.on(
     "ExecuteClaim",
     async (policyNo, amount, claimTime: BigNumber, event) => {
