@@ -56,15 +56,10 @@ const EmailContactForm = ({ claim_info, clearUserClaims }: Props) => {
       direction="column"
       flex="1"
       py={{ base: "16", md: "10" }}
+      minH="100vh"
     >
       <Container flex="1">
-        <Box
-          as="section"
-          bg="bg-surface"
-          py={{ base: "16", md: "20" }}
-          minH="md"
-          m={10}
-        >
+        <Box as="section" bg="bg-surface" py={{ base: "16", md: "20" }} m={10}>
           <form ref={form} onSubmit={sendEmail}>
             <label>Your Name:</label>
             <input

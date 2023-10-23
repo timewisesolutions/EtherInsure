@@ -59,7 +59,7 @@ const PolicyPaymentSuccess = ({ policyNo }: Props) => {
             as="section"
             bg="bg-surface"
             my={{ base: "0", md: "1" }}
-            minH="lg"
+            minH="100vh"
           >
             <Text
               fontWeight={"semibold"}

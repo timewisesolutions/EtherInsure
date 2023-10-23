@@ -128,14 +128,10 @@ const ClaimsUserMain = ({ clearUserClaims }: Props) => {
       direction="column"
       flex="1"
       py={{ base: "16", md: "10" }}
+      minH="100vh"
     >
       <Container flex="1">
-        <Box
-          as="section"
-          bg="bg-surface"
-          py={{ base: "16", md: "20" }}
-          minH="md"
-        >
+        <Box as="section" bg="bg-surface" py={{ base: "16", md: "20" }}>
           <Text
             fontSize={"larger"}
             fontWeight={"bold"}

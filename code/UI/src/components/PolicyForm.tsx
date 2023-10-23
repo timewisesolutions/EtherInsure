@@ -108,9 +108,10 @@ const PolicyForm = ({
       direction="column"
       flex="1"
       py={{ base: "2", lg: "5" }}
+      minH="100vh"
     >
       <Container flex="1">
-        <Box as="section" bg="bg-surface" py={{ base: "5", md: "8" }} minH="md">
+        <Box as="section" bg="bg-surface" py={{ base: "5", md: "8" }}>
           <Text fontSize={"larger"} fontWeight={"bold"} align={"center"}>
             {" "}
             Enter the Pet Details

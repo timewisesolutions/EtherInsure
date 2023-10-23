@@ -105,7 +105,7 @@ const PolicyPayment = () => {
             as="section"
             bg="bg-surface"
             py={{ base: "12", md: "20" }}
-            minH="xs"
+            minH="100vh"
           >
             {petInfoContext ? (
               paymentSuccess ? (

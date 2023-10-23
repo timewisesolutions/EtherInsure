@@ -48,9 +48,10 @@ const ClaimsMain = () => {
             direction="column"
             flex="1"
             py={{ base: "16", md: "5" }}
+            minH="100vh"
           >
             <Center flex="1">
-              <HStack as="section" bg="bg-surface" minH="md" gap={"40"}>
+              <HStack as="section" bg="bg-surface" gap={"40"}>
                 <Button
                   size={"lg"}
                   borderRadius="md"
