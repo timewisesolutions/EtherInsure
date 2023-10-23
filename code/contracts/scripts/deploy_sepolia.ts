@@ -2,16 +2,14 @@ import { ethers, artifacts } from "hardhat";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import {
-  get_company_addresses_localhost,
-  get_registered_vet_addresses_localhost,
-  get_vaultInvesters_localhost,
+  get_company_address,
+  get_registered_vet_addresses,
+  get_vaultInvesters,
 } from "../config/config";
 import { TransactionRequest } from "ethers";
 
 async function main() {
-  const [deployer, ...signers] = await ethers.getSigners();
-  const signer19 = signers[18];
-
+  const [deployer] = await ethers.getSigners();
   console.log("Deploying contracts with the account:", deployer.address);
 
   const Policy = await ethers.getContractFactory("PetPolicy");
@@ -40,7 +38,7 @@ async function main() {
 
   // Deploy EtherPool with balance of 100 Ethers
   const Vault = await ethers.getContractFactory("Vault");
-  const vault_investers = get_vaultInvesters_localhost();
+  const vault_investers = get_vaultInvesters();
   // Iterate over the entries of the map.
   const investers = [...vault_investers.keys()];
   const shares = [...vault_investers.values()];
@@ -51,19 +49,19 @@ async function main() {
     "Vault balance before:",
     ethers.formatEther(await vault.get_balance())
   );
-  const transaction = await vault.connect(signer19).depositEther({
-    value: ethers.parseUnits("100", "ether"),
+  const transaction = await vault.depositEther({
+    value: ethers.parseUnits("1", "ether"),
   });
   console.log(
     "Vault balance after:",
     ethers.formatEther(await vault.get_balance())
   );
   const provider = ethers.provider;
-  const balance = await provider.getBalance(signer19);
+  const balance = await provider.getBalance(deployer);
   console.log("Wallet signer19 balance:", ethers.formatEther(balance));
   // deploy multisig, for which we first read the config params for the addresses of the constructor
-  const company = get_company_addresses_localhost();
-  const vet = get_registered_vet_addresses_localhost();
+  const company = get_company_address();
+  const vet = get_registered_vet_addresses();
   const owners = [...company, ...vet];
   const MultiSig = await ethers.getContractFactory("MultiSigWallet");
   txn = await MultiSig.deploy(owners, 3);
@@ -74,6 +72,14 @@ async function main() {
 
   //console.log("total confirmations:", await tx.numConfirmationsRequired());
   //console.log("Owners:", await tx.getOwners());
+
+  /* test withdrawal from Vault  let txn = await Vault.deploy(investers, shares);
+  const withdraw = await vault.withDrawAll();
+  console.log(
+    "Vault balance after withdrawal:",
+    ethers.formatEther(await vault.get_balance())
+  );
+  */
 }
 
 function syncWriteFile(filename: string, data: any) {

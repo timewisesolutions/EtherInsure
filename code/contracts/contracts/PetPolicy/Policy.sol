@@ -56,7 +56,7 @@ contract PetPolicy {
     ) {
         premium_per_annum = (_premium_per_annum) * (10 ** 18);
         platform_fee_percent = (_platform_fee_percent);
-        aud_to_eth = 0.00039 * (10 ** 18); // in wei or 0.000353174 ether
+        aud_to_eth = 0.000039 * (10 ** 18); // in wei or 0.000353174 ether
         eth_to_aud = 2588;
         max_value_insured = _max_value_insured;
     }
